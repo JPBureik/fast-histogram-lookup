@@ -44,18 +44,28 @@ python benchmarks/benchmark.py --plot  # Generate bar chart
 
 ## Profiling
 
-The optimization target was identified via profiling. To reproduce:
+This module was extracted from a larger scientific analysis pipeline after
+profiling identified the bottleneck. The original workflow was:
+
+1. **Load data** — read experimental shots from HDF5
+2. **Bin into 3D histogram** — create momentum-space voxel grid
+3. **Look up all voxels** — extract values for each voxel across all shots ← *bottleneck*
+4. **Calculate correlations** — compute high-order correlation functions
+
+Profiling the full pipeline showed step 3 dominated runtime: millions of
+Python-level array accesses with index arithmetic. This module isolates that
+hot loop with a Cython implementation.
+
+To profile the isolated baseline:
 
 ```bash
 python profiling/profile_baseline.py
-
-# Visualize the profile:
-pip install snakeviz
-snakeviz profiling/baseline.prof
+snakeviz profiling/baseline.prof  # pip install snakeviz
 ```
 
-This shows that `flat_to_3d` and histogram indexing dominate runtime in the
-pure Python version — the hot loop that benefits from Cython.
+Within the isolated module, `flat_to_3d` and histogram indexing dominate —
+exactly the operations that benefit from typed memoryviews and compiled
+index arithmetic.
 
 ## Installation
 
