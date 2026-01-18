@@ -3,7 +3,13 @@
 import numpy as np
 import pytest
 
-from histlookup import lookup_py
+from histlookup import (
+    get_value,
+    is_cython_available,
+    lookup_all_voxels,
+    lookup_py,
+    multi_shot_lookup,
+)
 
 # Cython module may not be compiled yet
 try:
@@ -129,3 +135,82 @@ class TestMultiShotLookup:
         cy_out = np.empty((5, 1000), dtype=np.float64)
         lookup_cy.multi_shot_lookup(histograms, 5, 10, cy_out)
         np.testing.assert_array_almost_equal(py_result, cy_out)
+
+
+class TestHighLevelAPI:
+    """Tests for the high-level user-facing API."""
+
+    def test_is_cython_available(self):
+        """is_cython_available should return a boolean."""
+        result = is_cython_available()
+        assert isinstance(result, bool)
+
+    def test_lookup_all_voxels_basic(self):
+        """High-level lookup_all_voxels should work with just an array."""
+        hist = np.random.rand(10, 10, 10).astype(np.float64)
+        result = lookup_all_voxels(hist)
+        assert result.shape == (1000,)
+        assert isinstance(result, np.ndarray)
+
+    def test_lookup_all_voxels_matches_flatten(self):
+        """High-level API should produce same result as flatten."""
+        hist = np.random.rand(15, 15, 15).astype(np.float64)
+        result = lookup_all_voxels(hist)
+        np.testing.assert_array_almost_equal(result, hist.flatten())
+
+    def test_lookup_all_voxels_force_python(self):
+        """Should be able to force Python implementation."""
+        hist = np.random.rand(10, 10, 10).astype(np.float64)
+        result = lookup_all_voxels(hist, use_cython=False)
+        np.testing.assert_array_almost_equal(result, hist.flatten())
+
+    def test_lookup_all_voxels_auto_converts_dtype(self):
+        """Should auto-convert to float64 if needed."""
+        hist = np.random.rand(10, 10, 10).astype(np.float32)
+        result = lookup_all_voxels(hist)
+        assert result.dtype == np.float64
+
+    def test_lookup_all_voxels_rejects_non_cubic(self):
+        """Should reject non-cubic histograms."""
+        hist = np.random.rand(10, 10, 20).astype(np.float64)
+        with pytest.raises(ValueError, match="cubic"):
+            lookup_all_voxels(hist)
+
+    def test_lookup_all_voxels_rejects_non_3d(self):
+        """Should reject non-3D arrays."""
+        hist = np.random.rand(10, 10).astype(np.float64)
+        with pytest.raises(ValueError, match="3D"):
+            lookup_all_voxels(hist)
+
+    def test_multi_shot_lookup_basic(self):
+        """High-level multi_shot_lookup should work with just an array."""
+        histograms = np.random.rand(5, 10, 10, 10).astype(np.float64)
+        result = multi_shot_lookup(histograms)
+        assert result.shape == (5, 1000)
+        assert isinstance(result, np.ndarray)
+
+    def test_multi_shot_lookup_matches_per_shot(self):
+        """Each row should match corresponding histogram flattened."""
+        histograms = np.random.rand(3, 8, 8, 8).astype(np.float64)
+        result = multi_shot_lookup(histograms)
+        for i in range(3):
+            np.testing.assert_array_almost_equal(result[i], histograms[i].flatten())
+
+    def test_multi_shot_lookup_force_python(self):
+        """Should be able to force Python implementation."""
+        histograms = np.random.rand(3, 8, 8, 8).astype(np.float64)
+        result = multi_shot_lookup(histograms, use_cython=False)
+        for i in range(3):
+            np.testing.assert_array_almost_equal(result[i], histograms[i].flatten())
+
+    def test_get_value_basic(self):
+        """High-level get_value should return correct value."""
+        hist = np.zeros((10, 10, 10), dtype=np.float64)
+        hist[3, 4, 5] = 42.0
+        assert get_value(hist, 3, 4, 5) == 42.0
+
+    def test_get_value_force_python(self):
+        """Should be able to force Python implementation."""
+        hist = np.zeros((10, 10, 10), dtype=np.float64)
+        hist[3, 4, 5] = 42.0
+        assert get_value(hist, 3, 4, 5, use_cython=False) == 42.0

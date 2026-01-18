@@ -81,20 +81,33 @@ pip install -e ".[dev]"
 
 ```python
 import numpy as np
-from histlookup import lookup_cy, lookup_py
+from histlookup import lookup_all_voxels, multi_shot_lookup
 
-# Create a 3D histogram (e.g., 50x50x50 bins)
+# Single histogram - just pass the array
 hist = np.random.rand(50, 50, 50).astype(np.float64)
+values = lookup_all_voxels(hist)  # Returns numpy array, shape (125000,)
 
-# Cython version (fast)
-result_cy = np.asarray(lookup_cy.lookup_all_voxels(hist, 50))
-
-# Python version (baseline)
-result_py = lookup_py.lookup_all_voxels(hist, 50)
-
-# Results are identical
-assert np.allclose(result_cy, result_py)
+# Batch processing - the primary use case for large workloads
+histograms = np.random.rand(100, 30, 30, 30).astype(np.float64)
+all_values = multi_shot_lookup(histograms)  # Shape (100, 27000)
 ```
+
+The API automatically uses Cython if available, with pure Python fallback.
+No need to handle memoryviews or pre-allocate output arrays.
+
+<details>
+<summary>Low-level access (for benchmarking or explicit control)</summary>
+
+```python
+from histlookup import lookup_cy, lookup_py, is_cython_available
+
+if is_cython_available():
+    result = np.asarray(lookup_cy.lookup_all_voxels(hist, 50))
+else:
+    result = lookup_py.lookup_all_voxels(hist, 50)
+```
+
+</details>
 
 ## Development
 
