@@ -75,3 +75,6 @@ dmypy.json
 # Benchmark results (keep plots)
 benchmarks/results/*.csv
 !benchmarks/results/.gitkeep
+
+# Profiling output
+*.prof
