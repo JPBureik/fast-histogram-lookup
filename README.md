@@ -42,6 +42,21 @@ python benchmarks/benchmark.py
 python benchmarks/benchmark.py --plot  # Generate bar chart
 ```
 
+## Profiling
+
+The optimization target was identified via profiling. To reproduce:
+
+```bash
+python profiling/profile_baseline.py
+
+# Visualize the profile:
+pip install snakeviz
+snakeviz profiling/baseline.prof
+```
+
+This shows that `flat_to_3d` and histogram indexing dominate runtime in the
+pure Python version — the hot loop that benefits from Cython.
+
 ## Installation
 
 ```bash
