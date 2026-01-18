@@ -9,7 +9,7 @@ description = "Cython-accelerated 3D histogram bin lookups with ~80x speedup ove
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Jean-Philippe Bureik", email = "jean-philippe@bureik.net"}
+    {name = "Jan-Philipp Bureik", email = "jp.bureik@protonmail.com"}
 ]
 requires-python = ">=3.10"
 classifiers = [
