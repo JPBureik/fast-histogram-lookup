@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fast-histogram-lookup"
 version = "0.1.0"
-description = "Cython-accelerated 3D histogram bin lookups with ~80x speedup over pure Python"
+description = "Cython-accelerated 3D histogram bin lookups with ~40x speedup over pure Python"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
