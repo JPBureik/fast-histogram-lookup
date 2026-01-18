@@ -32,29 +32,23 @@ Measured on synthetic data matching realistic workloads (multiple histogram
 | 20³ | 8,000 | 50 | 400K | 155 ms | 4.1 ms | **37x** |
 | 30³ | 27,000 | 20 | 540K | 214 ms | 5.6 ms | **38x** |
 | 40³ | 64,000 | 10 | 640K | 258 ms | 6.6 ms | **39x** |
-| 55³ | 166,375 | 2,095 | 349M | 142 s | 3.7 s | **38x** |
-
-The last row represents a realistic scientific workload with ~350 million
-lookups.
+| 55³ | 166,375 | 100 | 16.6M | 6.0 s | 160 ms | **38x** |
 
 **Average speedup: ~38x**
 
 Run benchmarks yourself:
 ```bash
 python benchmarks/benchmark.py
+python benchmarks/benchmark.py --plot  # Generate bar chart
 ```
 
 ## Installation
 
 ```bash
-pip install fast-histogram-lookup
-```
-
-Or from source:
-
-```bash
 git clone https://github.com/JPBureik/fast-histogram-lookup.git
 cd fast-histogram-lookup
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 ```
 
@@ -80,9 +74,6 @@ assert np.allclose(result_cy, result_py)
 ## Development
 
 ```bash
-# Install dev dependencies
-pip install -e ".[dev]"
-
 # Run tests
 pytest
 

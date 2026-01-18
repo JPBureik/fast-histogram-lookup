@@ -248,7 +248,7 @@ def run_benchmarks(quick: bool = False) -> list[BenchmarkResult]:
         shot_configs = [(10, 50), (20, 20)]
     else:
         axis_lengths = [10, 20, 30, 40, 50]
-        shot_configs = [(10, 100), (20, 50), (30, 20), (40, 10)]
+        shot_configs = [(10, 100), (20, 50), (30, 20), (40, 10), (55, 100)]
 
     print("Running single-histogram benchmarks...")
     for axis_len in axis_lengths:
@@ -267,6 +267,78 @@ def run_benchmarks(quick: bool = False) -> list[BenchmarkResult]:
     return results
 
 
+def plot_results(
+    results: list[BenchmarkResult], output_path: str | None = None
+) -> None:
+    """
+    Create a bar chart of speedup results.
+
+    Parameters
+    ----------
+    results : list[BenchmarkResult]
+        Benchmark results to plot
+    output_path : str, optional
+        Path to save the plot. If None, displays interactively.
+    """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print("matplotlib not installed, skipping plot")
+        return
+
+    # Filter to multi-shot results for cleaner plot
+    multi_shot = [r for r in results if r.n_shots > 1]
+
+    labels = [f"{r.axis_len}³\n({r.n_shots} shots)" for r in multi_shot]
+    speedups = [r.speedup for r in multi_shot]
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    bars = ax.bar(labels, speedups, color="#2E86AB", edgecolor="black", linewidth=0.5)
+
+    # Add value labels on bars
+    for bar, speedup in zip(bars, speedups, strict=True):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.5,
+            f"{speedup:.1f}x",
+            ha="center",
+            va="bottom",
+            fontsize=11,
+            fontweight="bold",
+        )
+
+    ax.set_ylabel("Speedup (Python / Cython)", fontsize=12)
+    ax.set_xlabel("Histogram Size (axis length³)", fontsize=12)
+    ax.set_title(
+        "Cython vs Pure Python: 3D Histogram Lookup Performance",
+        fontsize=14,
+        fontweight="bold",
+    )
+
+    # Add horizontal line at average
+    avg_speedup = np.mean(speedups)
+    ax.axhline(y=avg_speedup, color="red", linestyle="--", linewidth=1.5, alpha=0.7)
+    ax.text(
+        len(labels) - 0.5,
+        avg_speedup + 0.5,
+        f"avg: {avg_speedup:.1f}x",
+        color="red",
+        fontsize=10,
+    )
+
+    ax.set_ylim(0, max(speedups) + 5)
+    ax.grid(axis="y", alpha=0.3)
+
+    plt.tight_layout()
+
+    if output_path:
+        plt.savefig(output_path, dpi=150, bbox_inches="tight")
+        print(f"Plot saved to {output_path}")
+    else:
+        plt.show()
+
+
 def main() -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -277,6 +349,13 @@ def main() -> int:
     )
     parser.add_argument(
         "--skip-verify", action="store_true", help="Skip correctness verification"
+    )
+    parser.add_argument(
+        "--plot",
+        nargs="?",
+        const="benchmarks/speedup.png",
+        metavar="PATH",
+        help="Generate bar chart (default: benchmarks/speedup.png)",
     )
     args = parser.parse_args()
 
@@ -290,6 +369,9 @@ def main() -> int:
 
     results = run_benchmarks(quick=args.quick)
     print_results(results)
+
+    if args.plot:
+        plot_results(results, args.plot)
 
     return 0
 
