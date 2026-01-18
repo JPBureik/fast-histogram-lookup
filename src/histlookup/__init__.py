@@ -19,14 +19,21 @@ Example
 >>> result_py = lookup_py.lookup_all_voxels(hist, 50)
 """
 
+from __future__ import annotations
+
+import types
+
+from . import lookup_py
+
 __version__ = "0.1.0"
 
 # Import submodules - Cython import may fail if not compiled
+lookup_cy: types.ModuleType | None
 try:
-    from . import lookup_cy
-except ImportError:
-    lookup_cy = None  # type: ignore
+    from . import lookup_cy as _lookup_cy
 
-from . import lookup_py
+    lookup_cy = _lookup_cy
+except ImportError:
+    lookup_cy = None
 
 __all__ = ["lookup_cy", "lookup_py"]

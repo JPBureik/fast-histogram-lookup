@@ -31,7 +31,7 @@ def get_hist_value(hist: NDArray[np.float64], ix: int, iy: int, iz: int) -> floa
     float
         Value at hist[ix, iy, iz]
     """
-    return hist[ix, iy, iz]
+    return float(hist[ix, iy, iz])
 
 
 def flat_to_3d(flat_idx: int, axis_len: int) -> tuple[int, int, int]:
@@ -107,7 +107,7 @@ def lookup_all_voxels(
     ndarray
         All histogram values in flat (row-major) order
     """
-    total = axis_len ** 3
+    total = axis_len**3
     result = np.empty(total, dtype=np.float64)
 
     for idx in range(total):
@@ -139,7 +139,7 @@ def multi_shot_lookup(
     ndarray
         Output array of shape (n_shots, axis_len^3)
     """
-    total = axis_len ** 3
+    total = axis_len**3
     out = np.empty((n_shots, total), dtype=np.float64)
 
     for shot in range(n_shots):

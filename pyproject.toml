@@ -7,7 +7,7 @@ name = "fast-histogram-lookup"
 version = "0.1.0"
 description = "Cython-accelerated 3D histogram bin lookups with ~80x speedup over pure Python"
 readme = "README.md"
-license = {text = "MIT"}
+license = {file = "LICENSE"}
 authors = [
     {name = "Jan-Philipp Bureik", email = "jp.bureik@protonmail.com"}
 ]
@@ -17,9 +17,6 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Cython",
     "Topic :: Scientific/Engineering",
 ]
@@ -33,6 +30,9 @@ dev = [
     "pytest-cov>=4.0",
     "matplotlib>=3.5",
     "pandas>=1.5",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "pre-commit>=3.7.0",
 ]
 
 [project.urls]
@@ -51,3 +51,25 @@ python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+src = ["src", "tests", "benchmarks"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["histlookup"]
